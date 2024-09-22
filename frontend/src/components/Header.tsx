@@ -6,7 +6,7 @@ import ThemeToggle from "./ThemeToggle";
 const Header: React.FC = () => {
   return (
     <header className="flex justify-between items-center p-4">
-      <div className="flex items-center">
+      <div className="flex items-center p-1 dark:bg-white">
         {/* Small Logo: Visible on small screens, hidden on medium and larger screens */}
         <img
           src="https://www.cinemacalc.com/user/themes/cinema-calc-marketing-website-theme/assets/logo-small.svg"
