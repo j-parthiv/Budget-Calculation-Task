@@ -1,0 +1,6 @@
+# Backend (C#/.NET)
+backend/cinemacalcbackend/bin/
+backend/cinemacalcbackend/obj/
+backend/cinemacalcbackend/*.user
+backend/cinemacalcbackend/*.suo
+.vscode

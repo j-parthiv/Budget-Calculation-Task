@@ -1,0 +1,6 @@
+@CinemaCalcBackend_HostAddress = http://localhost:5045
+
+GET {{CinemaCalcBackend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
