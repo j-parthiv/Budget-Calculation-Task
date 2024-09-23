@@ -16,6 +16,6 @@ namespace CinemaCalcBackend.Models
         [Required]
         public decimal PercentageMarkup { get; set; }
 
-        public decimal TotalPrice => Price + (Price * PercentageMarkup);
+        public decimal TotalPrice => Price + (Price * (PercentageMarkup / 100));
     }
 }
