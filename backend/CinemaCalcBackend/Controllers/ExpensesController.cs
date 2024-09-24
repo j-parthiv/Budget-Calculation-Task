@@ -2,6 +2,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CinemaCalcBackend.Data;
 using CinemaCalcBackend.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace CinemaCalcBackend.Controllers
 {
@@ -10,6 +14,7 @@ namespace CinemaCalcBackend.Controllers
     public class ExpensesController : ControllerBase
     {
         private readonly CinemaCalcContext _context;
+        private const decimal MaxPrice = 1000000000m; // 1 billion
 
         public ExpensesController(CinemaCalcContext context)
         {
@@ -23,23 +28,52 @@ namespace CinemaCalcBackend.Controllers
             return await _context.Expenses.ToListAsync();
         }
 
+        // GET: api/Expenses/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Expense>> GetExpense(int id)
+        {
+            var expense = await _context.Expenses.FindAsync(id);
+            if (expense == null)
+            {
+                return NotFound(new { Message = $"Expense with ID {id} not found." });
+            }
+            return expense;
+        }
+
         // POST: api/Expenses
         [HttpPost]
-        public async Task<ActionResult<Expense>> PostExpense(Expense expense)
+        public async Task<ActionResult<Expense>> PostExpense([FromBody] Expense expense)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var validationResult = ValidateExpense(expense);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(new { Message = validationResult.ErrorMessage });
+            }
+
             _context.Expenses.Add(expense);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetExpenses), new { id = expense.Id }, expense);
+            return CreatedAtAction(nameof(GetExpense), new { id = expense.Id }, expense);
         }
 
         // PUT: api/Expenses/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutExpense(int id, Expense expense)
+        public async Task<IActionResult> PutExpense(int id, [FromBody] Expense expense)
         {
-            if (id != expense.Id)
+            if (!ModelState.IsValid)
             {
-                return BadRequest();
+                return BadRequest(ModelState);
+            }
+
+            var validationResult = ValidateExpense(expense);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(new { Message = validationResult.ErrorMessage });
             }
 
             _context.Entry(expense).State = EntityState.Modified;
@@ -52,7 +86,7 @@ namespace CinemaCalcBackend.Controllers
             {
                 if (!ExpenseExists(id))
                 {
-                    return NotFound();
+                    return NotFound(new { Message = $"Expense with ID {id} not found." });
                 }
                 else
                 {
@@ -70,7 +104,7 @@ namespace CinemaCalcBackend.Controllers
             var expense = await _context.Expenses.FindAsync(id);
             if (expense == null)
             {
-                return NotFound();
+                return NotFound(new { Message = $"Expense with ID {id} not found." });
             }
 
             _context.Expenses.Remove(expense);
@@ -79,9 +113,52 @@ namespace CinemaCalcBackend.Controllers
             return NoContent();
         }
 
+        // GET: api/Expenses/Total
+        [HttpGet("Total")]
+        public async Task<ActionResult<decimal>> GetTotalExpenses()
+        {
+            // Retrieve all expenses from the database
+            var expenses = await _context.Expenses.ToListAsync();
+
+            // Perform the sum of TotalPrice in memory
+            var total = expenses.Sum(e => e.TotalPrice);
+
+            return Ok(total);
+        }
         private bool ExpenseExists(int id)
         {
             return _context.Expenses.Any(e => e.Id == id);
+        }
+
+        private (bool IsValid, string ErrorMessage) ValidateExpense(Expense expense)
+        {
+            if (expense.Price < 0)
+            {
+                return (false, "Price cannot be negative.");
+            }
+
+            if (expense.Price > MaxPrice)
+            {
+                return (false, $"Price cannot exceed {MaxPrice:N2}.");
+            }
+
+            if (expense.PercentageMarkup < 0)
+            {
+                return (false, "Percentage markup cannot be negative.");
+            }
+
+            if (expense.PercentageMarkup > 100)
+            {
+                return (false, "Percentage markup cannot exceed 100%.");
+            }
+
+            decimal totalPrice = expense.Price + (expense.Price * expense.PercentageMarkup / 100);
+            if (totalPrice > MaxPrice)
+            {
+                return (false, $"The total price (including markup) exceeds the maximum allowed value of {MaxPrice:N2}.");
+            }
+
+            return (true, string.Empty);
         }
     }
 }
