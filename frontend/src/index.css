@@ -44,7 +44,7 @@
     /* Custom */
     --text-color: black;
     --secondary-color: rgb(29, 78, 137);
-    --secondary-color-light: rgba(29, 78, 137, 0.9);
+    --secondary-color-light: rgba(29, 78, 137, 0.8);
   }
   
   .dark {
@@ -76,7 +76,7 @@
     /* Custom */
     --text-color: white;
     --secondary-color:rgb(239, 68, 68);
-    --secondary-color-light: rgba(239, 68, 68, 0.9);
+    --secondary-color-light: rgba(239, 68, 68, 0.8);
   }
 }
 
@@ -106,7 +106,7 @@
   color: white;
 }
 
-.secondary-bg-color-light {
-  background-color: var(--secondary-color-light);
+.secondary-bg-color:hover{
+  background-color: var(--secondary-color-light) !important;
   color: white;
 }
