@@ -4,7 +4,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { CircleAlert } from "lucide-react";
 
 interface CustomTooltipProps {
   content: string;
