@@ -2,8 +2,6 @@
 
 This project is a simple budget calculation application developed using **React (TypeScript)** for the frontend and **.NET (C#)** with **PostgreSQL** for the backend. It allows users to input various expenses, calculates the total price with a markup, and performs precise calculations to manage large sums and percentages.
 
----
-
 ## Table of Contents
 1. [Installation](#installation)
    - [With Docker](#with-docker)
@@ -15,7 +13,6 @@ This project is a simple budget calculation application developed using **React 
    - [Precise Number Calculations](#precise-number-calculations)
 3. [Task Planning & Approach](#task-planning--approach)
 
----
 
 ## Installation
 
@@ -65,21 +62,27 @@ This will start both the frontend and backend containers, as well as the Postgre
      dotnet run
      ```
 
-3. **Frontend Setup (React + Vite):**
-   - Navigate to the frontend directory:
-     ```bash
-     cd frontend/cinema-calc-frontend
-     ```
-   - Install dependencies:
-     ```bash
-     npm install
-     ```
-   - Start the frontend:
-     ```bash
-     npm start
-     ```
+### Frontend Setup (React + Vite):
 
----
+  - Navigate to the frontend directory:
+    ```bash
+    cd frontend
+    ```
+
+  - Create a `.env` file in the root of the frontend directory and add the following line to set the API base URL:
+    ```env
+    VITE_API_BASE_URL=http://localhost:5045/api
+    ```
+
+  - Install dependencies:
+    ```bash
+    npm install
+    ```
+
+  - Start the frontend:
+    ```bash
+    npm start
+    ```
 
 ## About the Project
 
@@ -118,8 +121,6 @@ Precise number calculations were handled on both the frontend and backend. Hereâ
 - **Frontend**: 
   - Row-level calculations for individual expenses are performed in real-time to ensure responsiveness.
   - Total calculations are retrieved from the backend to handle potential future scaling (e.g., handling large datasets).
-
----
 
 ## Task Planning & Approach
 
