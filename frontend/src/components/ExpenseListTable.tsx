@@ -5,21 +5,18 @@ import {
   TableHead,
   TableRow,
 } from "@/components/ui/table";
-import CustomTooltip from "./CustomTooltip";
-import { CircleAlert } from "lucide-react";
-
+import CustomTooltip from "./CustomToolTip";
+import { CircleAlert, Plus } from "lucide-react";
 import ExpenseRow from "./ExpenseRow";
-import useFetchExpenses from "@/hooks/useFetchExpense";
 import { Spinner } from "./ui/spinner";
-import { UseFetchExpensesResult } from "@/types/types";
-import { useState, useEffect } from "react";
-import axios from "axios";
-import { useToast } from "@/hooks/use-toast";
+import { Button } from "./ui/button";
+import { Expense, ExpenseListTableProps } from "@/types/types";
 
-const ExpenseListTable: React.FC = ({
+const ExpenseListTable: React.FC<ExpenseListTableProps> = ({
   expenses,
   loading,
   editing,
+  onAdd,
   deleting,
   error,
   onDelete,
@@ -43,7 +40,13 @@ const ExpenseListTable: React.FC = ({
 
         {!loading && !error && expenses.length === 0 && (
           <div className="w-full h-52 flex justify-center items-center">
-            <p>No expenses available.</p>
+            <Button
+              className="w-full sm:w-auto flex items-center justify-center gap-2 secondary-bg-color animate-bounce"
+              onClick={onAdd}
+            >
+              <Plus className="w-4 h-4" />
+              Add Expense
+            </Button>
           </div>
         )}
 
@@ -76,10 +79,10 @@ const ExpenseListTable: React.FC = ({
               </TableHeader>
 
               <TableBody>
-                {expenses.map((expense, index) => (
+                {expenses?.map((expense: Expense) => (
                   <ExpenseRow
                     expense={expense}
-                    editing={editing}
+                    isEditing={editing === expense.id}
                     index={expense.id}
                     key={expense.id}
                     onDelete={onDelete}
