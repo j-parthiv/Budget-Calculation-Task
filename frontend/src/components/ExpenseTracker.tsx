@@ -14,39 +14,36 @@ import useFetchTotal from "@/hooks/useFetchTotal";
 import usePostExpense from "@/hooks/usePostExpense";
 import usePutExpense from "@/hooks/usePutExpense";
 import useDeleteExpense from "@/hooks/useDeleteExpense";
-
-interface Expense {
-  id: number;
-  name: string;
-  price: number;
-  percentageMarkup: number;
-  totalPrice: number;
-  isNew?: boolean;
-}
+import { Expense } from "@/types/types";
 
 const ExpenseTracker: React.FC = () => {
-  // Custom hook usage
+  // Custom hook to fetch expenses
   const {
     expenses: fetchedExpenses,
     loading: expensesLoading,
     error: expensesError,
   } = useFetchExpenses();
+
+  // Custom hook to fetch total price
   const {
     total,
     loading: totalLoading,
     error: totalError,
     refetchTotal,
   } = useFetchTotal();
-  const { postExpense, loading: adding } = usePostExpense();
+
+  // Hooks for creating, updating, and deleting expenses
   const { putExpense, loading: editing } = usePutExpense();
   const { deleteExpense, loading: deleting } = useDeleteExpense();
+  const { postExpense } = usePostExpense();
 
-  const [expenses, setExpenses] = useState<Expense[]>(fetchedExpenses);
+  // State to manage the local list of expenses
+  const [expenses, setExpenses] = useState<Expense[]>(fetchedExpenses || []);
   const newExpenseRef = useRef<HTMLInputElement>(null);
 
-  // Sync fetched expenses with state
+  // Sync fetched expenses with local state when fetched data changes
   useEffect(() => {
-    setExpenses(fetchedExpenses);
+    setExpenses(fetchedExpenses || []);
   }, [fetchedExpenses]);
 
   // Refetch total whenever expenses change
@@ -62,10 +59,11 @@ const ExpenseTracker: React.FC = () => {
       price: 0,
       percentageMarkup: 0,
       totalPrice: 0,
-      isNew: true, // Mark as new until saved to server
+      isNew: true, // Mark as new until saved to the server
     };
     setExpenses((prevExpenses) => [...prevExpenses, newExpense]);
 
+    // Focus on the input for the new expense
     setTimeout(() => {
       if (newExpenseRef.current) {
         newExpenseRef.current.focus();
@@ -73,41 +71,44 @@ const ExpenseTracker: React.FC = () => {
     }, 0);
   };
 
-  // Delete expense (local and server)
+  // Delete expense locally or from the server if saved
   const onDelete = async (id: number) => {
     const expenseToDelete = expenses.find((expense) => expense.id === id);
 
+    // If it's a new unsaved expense, just remove it locally
     if (expenseToDelete?.isNew) {
-      // Just remove locally if it's new and unsaved
       setExpenses((prevExpenses) =>
         prevExpenses.filter((expense) => expense.id !== id)
       );
       return;
     }
 
-    // Use the hook for deleting from server
+    // Otherwise, delete it from the server
     await deleteExpense(id);
     setExpenses((prevExpenses) =>
       prevExpenses.filter((expense) => expense.id !== id)
     );
   };
 
-  // Update or create expense (local and server)
+  // Update or create an expense, either locally or on the server
   const onUpdate = async (updatedExpense: Expense) => {
-    console.log("updatedExpense",updatedExpense);
     if (updatedExpense.isNew) {
+      // Post new expense to the server
       const createdExpense = await postExpense({
         name: updatedExpense.name,
         price: updatedExpense.price,
         percentageMarkup: updatedExpense.percentageMarkup,
       });
+      // Replace the local placeholder with the created one
       setExpenses((prevExpenses) =>
         prevExpenses.map((expense) =>
           expense.id === updatedExpense.id ? createdExpense : expense
         )
       );
     } else {
+      // Update the existing expense on the server
       await putExpense(updatedExpense);
+      // Update it in the local state
       setExpenses((prevExpenses) =>
         prevExpenses.map((expense) =>
           expense.id === updatedExpense.id ? updatedExpense : expense
@@ -139,6 +140,7 @@ const ExpenseTracker: React.FC = () => {
             editing={editing}
             deleting={deleting}
             error={expensesError}
+            onAdd={onAdd}
             onDelete={onDelete}
             onUpdate={onUpdate}
             newExpenseRef={newExpenseRef}
@@ -146,18 +148,17 @@ const ExpenseTracker: React.FC = () => {
         </CardContent>
 
         <CardFooter className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 p-6">
-          <Button
-            className="w-full sm:w-auto flex items-center justify-center gap-2 secondary-bg-color"
-            onClick={onAdd}
-            disabled={adding}
-          >
-            {adding ? (
-              <RefreshCw className="w-4 h-4 animate-spin" />
-            ) : (
-              <Plus className="w-4 h-4" />
+          <div>
+            {expenses.length > 0 && (
+              <Button
+                className="w-full sm:w-auto flex items-center justify-center gap-2 secondary-bg-color"
+                onClick={onAdd}
+              >
+                <Plus className="w-4 h-4" />
+                Add Expense
+              </Button>
             )}
-            {adding ? "Adding..." : "Add Expense"}
-          </Button>
+          </div>
           <div className="flex items-center justify-center bg-[#1d4e89]/10 dark:bg-gray-700 p-3 rounded-md w-full sm:w-auto mt-4 sm:mt-0">
             <span className="text-xl sm:text-2xl font-bold">Total: €</span>
             {totalLoading ? (
@@ -168,7 +169,7 @@ const ExpenseTracker: React.FC = () => {
               </span>
             ) : (
               <span className="text-xl sm:text-2xl font-bold ml-1">
-                {total?.toFixed(2) || "0.00"}
+                {total.toFixed(2)}
               </span>
             )}
           </div>
