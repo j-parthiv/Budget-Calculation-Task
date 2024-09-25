@@ -3,8 +3,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Euro, Percent, Trash2, RefreshCw, Check } from "lucide-react";
 import { TableRow, TableCell } from "@/components/ui/table";
-import { ExpenseRowProps } from "@/types/types";
 import { Spinner } from "./ui/spinner";
+import { Expense, ExpenseRowProps } from "@/types/types";
 
 const MAX_PRICE = 100000000; // 100 million
 const MAX_MARKUP = 100; // 100%
@@ -15,7 +15,7 @@ const ExpenseRow: React.FC<ExpenseRowProps> = ({
   onDelete,
   onUpdate,
   isDeleting,
-  editing,
+  isEditing,
   newExpenseRef,
 }) => {
   const [name, setName] = useState<string>(expense.name);
@@ -23,11 +23,14 @@ const ExpenseRow: React.FC<ExpenseRowProps> = ({
   const [markup, setMarkup] = useState<string>(
     expense.percentageMarkup.toFixed(2)
   );
-  const [totalPrice, setTotalPrice] = useState<number>(expense.totalPrice);
-  const [originalExpense, setOriginalExpense] = useState(expense);
+  const [totalPrice, setTotalPrice] = useState<number>(expense.totalPrice ?? 0);
+  const [originalExpense, setOriginalExpense] = useState<Expense>(expense);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">(
     "idle"
   );
+  const [isNameFocused, setIsNameFocused] = useState(false);
+  const [isPriceFocused, setIsPriceFocused] = useState(false);
+  const [isMarkupFocused, setIsMarkupFocused] = useState(false);
 
   const deleteButtonRef = useRef<HTMLButtonElement>(null);
   const isNewExpense = expense.isNew;
@@ -39,7 +42,6 @@ const ExpenseRow: React.FC<ExpenseRowProps> = ({
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // Allow empty input or values up to MAX_PRICE
     if (
       value === "" ||
       (/^\d*\.?\d{0,2}$/.test(value) && parseFloat(value) <= MAX_PRICE)
@@ -51,7 +53,6 @@ const ExpenseRow: React.FC<ExpenseRowProps> = ({
 
   const handleMarkupChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // Allow empty input or values up to MAX_MARKUP
     if (
       value === "" ||
       (/^\d*\.?\d{0,2}$/.test(value) && parseFloat(value) <= MAX_MARKUP)
@@ -73,10 +74,11 @@ const ExpenseRow: React.FC<ExpenseRowProps> = ({
       return;
     }
 
-    let updatedName = name.trim() === "" ? "Unnamed Expense" : name;
+    let updatedName = name.trim() === "" ? "Unnamed Expense" : name.trim();
     let updatedPrice = parseFloat(price) || 0;
     let updatedMarkup = parseFloat(markup) || 0;
 
+    setName(updatedName);
     setPrice(updatedPrice.toFixed(2));
     setMarkup(updatedMarkup.toFixed(2));
 
@@ -104,7 +106,7 @@ const ExpenseRow: React.FC<ExpenseRowProps> = ({
         setName(originalExpense.name);
         setPrice(originalExpense.price.toFixed(2));
         setMarkup(originalExpense.percentageMarkup.toFixed(2));
-        setTotalPrice(originalExpense.totalPrice);
+        setTotalPrice(originalExpense.totalPrice ?? 0);
       }
     }
   };
@@ -121,11 +123,15 @@ const ExpenseRow: React.FC<ExpenseRowProps> = ({
     <TableRow className="border-b relative" key={index}>
       <TableCell>
         <Input
-          value={name}
+          value={isNameFocused && name === "Unnamed Expense" ? "" : name}
           placeholder="Expense name"
           className="w-full min-w-32"
           onChange={handleNameChange}
-          onBlur={handleBlur}
+          onBlur={(e) => {
+            setIsNameFocused(false);
+            handleBlur(e);
+          }}
+          onFocus={() => setIsNameFocused(true)}
           ref={isNewExpense ? newExpenseRef : null}
         />
       </TableCell>
@@ -135,11 +141,15 @@ const ExpenseRow: React.FC<ExpenseRowProps> = ({
           <Input
             type="text"
             inputMode="decimal"
-            value={price}
+            value={isPriceFocused && price === "0.00" ? "" : price}
             placeholder="0.00"
             className="w-full min-w-32 pl-8"
             onChange={handlePriceChange}
-            onBlur={handleBlur}
+            onBlur={(e) => {
+              setIsPriceFocused(false);
+              handleBlur(e);
+            }}
+            onFocus={() => setIsPriceFocused(true)}
           />
         </div>
       </TableCell>
@@ -149,24 +159,27 @@ const ExpenseRow: React.FC<ExpenseRowProps> = ({
           <Input
             type="text"
             inputMode="decimal"
-            value={markup}
+            value={isMarkupFocused && markup === "0.00" ? "" : markup}
             placeholder="0.00"
             className="w-full min-w-32 pl-8"
             onChange={handleMarkupChange}
-            onBlur={handleBlur}
+            onBlur={(e) => {
+              setIsMarkupFocused(false);
+              handleBlur(e);
+            }}
+            onFocus={() => setIsMarkupFocused(true)}
           />
         </div>
       </TableCell>
       <TableCell className="font-medium w-32 whitespace-nowrap">
         € {totalPrice.toFixed(2)}
       </TableCell>
-
       <TableCell>
         <Button
           variant="ghost"
           size="icon"
           className="hover:bg-red-500 hover:text-white"
-          disabled={isDeleting || editing}
+          disabled={isDeleting || isEditing || saveStatus === "saving"}
           onClick={() => onDelete(expense.id)}
           ref={deleteButtonRef}
         >
