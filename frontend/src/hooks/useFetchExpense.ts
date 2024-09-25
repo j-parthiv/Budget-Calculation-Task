@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Expense } from '../types';
+import { Expense } from '@/types/types';
 
 const useFetchExpenses = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);

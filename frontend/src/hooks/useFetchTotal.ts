@@ -1,34 +1,29 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
-
+import { useEffect, useState } from "react";import axios from 'axios';
 interface TotalResponse {
   total: number;
 }
-
 const useFetchTotal = () => {
-  const [total, setTotal] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [total, setTotal] = useState<number>(0); 
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchTotal = async () => {
+  const refetchTotal = async () => {
     setLoading(true);
     setError(null);
     try {
       const response = await axios.get<TotalResponse>(`${import.meta.env.VITE_API_BASE_URL}/Expenses/Total`);
-      setTotal(response.data);
-    } catch (err) {
-        console.log(err);
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      setTotal(response.data || 0);
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
-
   useEffect(() => {
-    fetchTotal();
+    refetchTotal();
   }, []);
 
-  return { total, loading, error, refetchTotal: fetchTotal };
+  return { total, loading, error, refetchTotal };
 };
 
 export default useFetchTotal;

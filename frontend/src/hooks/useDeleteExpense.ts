@@ -4,11 +4,11 @@ import { useToast } from "@/hooks/use-toast";
 
 const useDeleteExpense = () => {
   const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<number|null> (null);
   const [error, setError] = useState<null | string>(null);
 
   const deleteExpense = async (id: number) => {
-    setLoading(true);
+    setLoading(id);
     setError(null);
     try {
       await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/Expenses/${id}`);
@@ -25,7 +25,7 @@ const useDeleteExpense = () => {
       });
       throw err;
     } finally {
-      setLoading(false);
+      setLoading(null);
     }
   };
 
