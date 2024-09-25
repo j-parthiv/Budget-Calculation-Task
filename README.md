@@ -198,6 +198,7 @@ The development process was broken down into the following tasks:
 - Refinement:
   - Testing of the application
   - Code cleanup and documentation
+  - Created Docker files for easier and faster development and deployment.
 
 ## Future Improvements
 

@@ -33,7 +33,7 @@ const ExpenseRow: React.FC<ExpenseRowProps> = ({
   const [isMarkupFocused, setIsMarkupFocused] = useState(false);
 
   const deleteButtonRef = useRef<HTMLButtonElement>(null);
-  const isNewExpense = expense.isNew;
+  const isNewExpense = expense.isNew; // Check if the expense is new
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setName(e.target.value);
@@ -42,6 +42,7 @@ const ExpenseRow: React.FC<ExpenseRowProps> = ({
 
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
+    // Validate price input
     if (
       value === "" ||
       (/^\d*\.?\d{0,2}$/.test(value) && parseFloat(value) <= MAX_PRICE)
@@ -53,6 +54,7 @@ const ExpenseRow: React.FC<ExpenseRowProps> = ({
 
   const handleMarkupChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
+    // Validate markup input
     if (
       value === "" ||
       (/^\d*\.?\d{0,2}$/.test(value) && parseFloat(value) <= MAX_MARKUP)
@@ -70,6 +72,7 @@ const ExpenseRow: React.FC<ExpenseRowProps> = ({
   };
 
   const handleBlur = async (e: React.FocusEvent) => {
+    // Ignore blur if moving to the delete button
     if (e.relatedTarget === deleteButtonRef.current) {
       return;
     }
@@ -95,6 +98,7 @@ const ExpenseRow: React.FC<ExpenseRowProps> = ({
       totalPrice: updatedTotalPrice,
     };
 
+    // Check if the updated expense differs from the original to avoid unnecessary api calls
     if (JSON.stringify(updatedExpense) !== JSON.stringify(originalExpense)) {
       setSaveStatus("saving");
       try {
@@ -102,6 +106,7 @@ const ExpenseRow: React.FC<ExpenseRowProps> = ({
         setOriginalExpense(updatedExpense);
         setSaveStatus("saved");
       } catch (error) {
+        // Revert to original values if the update fails
         setSaveStatus("idle");
         setName(originalExpense.name);
         setPrice(originalExpense.price.toFixed(2));
@@ -111,6 +116,7 @@ const ExpenseRow: React.FC<ExpenseRowProps> = ({
     }
   };
 
+  // Handle auto-reset of save status after a short delay
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (saveStatus === "saved") {
