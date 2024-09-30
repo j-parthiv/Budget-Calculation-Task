@@ -7,7 +7,7 @@
 3. [Technologies Used](#technologies-used)
 4. [Installation](#installation)
    - [With Docker](#with-docker)
-   - [Without Docker](#without-docker)
+   - [Without Docker](#without-docker)    
 5. [Project Structure](#project-structure)
    - [Backend](#backend)
    - [Frontend](#frontend)
@@ -86,6 +86,10 @@ CinemaCalc is a full-stack application designed to track film production expense
   ```bash
   dotnet ef database update
   ```
+  - If the migration command doesn't work, run this command to install:
+    ```bash
+    dotnet tool install --global dotnet-ef
+    ```
 - Run the backend:
   ```bash
   dotnet run
@@ -113,8 +117,10 @@ CinemaCalc is a full-stack application designed to track film production expense
 
 - Start the frontend:
   ```bash
-  npm start
+  npm run dev
   ```
+
+- **Note**: Run the frontend commands in another terminal while keeping the backend running in its terminal.
 
 ## Project Structure
 
@@ -210,3 +216,17 @@ While the current implementation meets the requirements for managing around 100 
  - Query optimization for faster database operations
  - Caching mechanisms to reduce database load
  - Advanced filtering and sorting options
+
+### Troubleshoot / Possible Problem Solutions
+
+- Make sure PostgreSQL is running. If not, the command to start PostgreSQL is:
+
+  ```bash
+  brew services start postgresql
+  ```
+
+- After starting the service, you can check the status again using:
+
+  ```bash
+  brew services list
+  ```
